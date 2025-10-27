@@ -6,7 +6,6 @@
 
 // 1. Get the container element and keys
 const productsContainer = document.getElementById('products-container'); // Container for Active Commissions
-// NEW: Get the container for Paid Commissions
 const paidProductsContainer = document.getElementById('paid-roducts-container'); 
 
 const sessionKey = 'commissionCart'; // Active, pending payment
@@ -33,23 +32,44 @@ const createCartItemCard = (item, isPaid = false) => {
     const cardStatusClass = isPaid ? 'opacity-75 border-success' : '';
     const badgeClass = isPaid ? 'bg-success' : 'bg-danger';
     const statusText = isPaid ? 'Paid Commission' : 'Pending Commission';
-    
+
     let footerContent;
+    
+    // --- PRICE CALCULATION AND DISPLAY (Updated) ---
+    const unitPrice = item.price.toFixed(2);
+    const totalPrice = (item.price * item.quantity).toFixed(2);
+
+    // HTML to display both unit and total price for ALL cards
+    const priceDisplayHTML = `
+        <div class="mb-1 text-muted">Unit: $${unitPrice} ea.</div>
+        <div class="fw-bold">Total: $${totalPrice}</div>
+    `;
+    // --------------------------------------------------
 
     if (isPaid) {
         // Show status for paid items
         const paidDate = item.paidDate ? new Date(item.paidDate).toLocaleDateString() : 'N/A';
         footerContent = `
             <div class="text-center text-success fw-bold">Paid on ${paidDate}</div>
+            <div class="text-center fw-bold mt-2">Quantity: ${item.quantity}</div>
         `;
     } else {
-        // Show Pay and Remove buttons for active items
+        // Show Quantity, Pay, and Revoke buttons for active items
+        
+        // Quantity Display Button-like Box
+        const quantityButton = `
+            <span class="btn btn-sm btn-outline-secondary mt-auto me-2">
+                <i class="bi-cart-fill me-1"></i>
+                ${item.quantity}
+            </span>
+        `;
+        
+        // Footer content assembly: [Quantity] [Pay] [Revoke]
         footerContent = `
             <div class="text-center d-flex justify-content-center">
-                <!-- NEW PAY BUTTON: White/Light and to the left -->
+                ${quantityButton}
                 <button class="btn btn-sm btn-light border mt-auto me-2 pay-item-btn" data-item-id="${item.id}">Pay</button>
-                <!-- Existing REMOVE BUTTON: Red -->
-                <button class="btn btn-sm btn-danger mt-auto remove-item-btn" data-item-id="${item.id}">Remove</button>
+                <button class="btn btn-sm btn-danger mt-auto remove-item-btn" data-item-id="${item.id}">Revoke</button>
             </div>
         `;
     }
@@ -62,7 +82,7 @@ const createCartItemCard = (item, isPaid = false) => {
                 <div class="card-body p-4">
                     <div class="text-center">
                         <h5 class="fw-bolder">${item.name}</h5>
-                        $${item.price.toFixed(2)}
+                        ${priceDisplayHTML}
                     </div>
                 </div>
                 <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
@@ -101,6 +121,8 @@ const payForItem = (itemIdToPay) => {
         
         // Reload the page to display the updated cart lists
         window.location.reload();
+        // NOTE: If you are using a global updateCartBadge function, you should call it here before reload, 
+        // or ensure it runs on page load after reload.
     } else {
         console.error(`Item with ID ${itemIdToPay} not found in pending cart.`);
     }
@@ -122,6 +144,8 @@ const removeItemFromCart = (itemIdToRemove) => {
 
     // 4. Reload the page to display the updated cart list
     window.location.reload(); 
+    // NOTE: If you are using a global updateCartBadge function, you should call it here before reload, 
+    // or ensure it runs on page load after reload.
 };
 
 // 5. Function to retrieve the items, render them, and attach listeners
@@ -163,7 +187,7 @@ const renderCartItems = () => {
     
     // 6. Attach Event Listeners (only to pending items, as paid items don't have buttons)
     
-    // Attach Remove Listeners
+    // Attach Revoke Listeners (uses the class '.remove-item-btn')
     document.querySelectorAll('.remove-item-btn').forEach(button => {
         button.addEventListener('click', (event) => {
             removeItemFromCart(event.currentTarget.getAttribute('data-item-id'));

@@ -1,4 +1,6 @@
+// --- Function to handle adding the product to sessionStorage (the 'cart') ---
 function addToCart(product, quantity) {
+    // 1. Retrieve the current cart items from sessionStorage
     const existingCartJson = sessionStorage.getItem(sessionKey);
     let cart = [];
     if (existingCartJson) {
@@ -9,32 +11,38 @@ function addToCart(product, quantity) {
             cart = []; 
         }
     }
-    const existingItemIndex = cart.findIndex(item => item.productId === product.id);
+    const uniqueCommissionId = Date.now(); 
 
-    if (existingItemIndex > -1) {
-        cart[existingItemIndex].quantity += quantity;
-        console.log(`Updated quantity for "${product.name}". New quantity: ${cart[existingItemIndex].quantity}`);
+    const cartItem = {
+        // This is the unique ID for this specific entry (commission instance)
+        id: uniqueCommissionId, 
+        
+        // This links back to the original product in localStorage (useful for rendering)
+        productId: product.id, 
+        
+        name: product.name,
+        price: product.price,
+        imageSrc: product.imageSrc,
+        
+        // Store the quantity requested for this one commission instance
+        quantity: quantity 
+    };
+    
+    // Add the single new entry to the cart array
+    cart.push(cartItem);
+    
+    console.log(`New commission instance for "${product.name}" added with quantity ${quantity}.`);
 
-    } else {
-        const cartItem = {
-            // Use the original product ID for grouping/comparison
-            productId: product.id, 
-            name: product.name,
-            price: product.price,
-            imageSrc: product.imageSrc,
-            quantity: quantity // Store the quantity as an attribute
-        };
-        cart.push(cartItem);
-        console.log(`${quantity} x "${product.name}" added as a new entry.`);
-    }
+    // 2. Store the updated cart back into sessionStorage
     sessionStorage.setItem(sessionKey, JSON.stringify(cart));
     
     // Calculate total item count (sum of all quantities) for the console log
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    console.log(`Total unique items in cart: ${cart.length}. Total quantity of items: ${totalItems}`);
-    updateCartBadge(); 
-}
+    console.log(`Total unique commission entries: ${cart.length}. Total quantity of items: ${totalItems}`);
 
+    // 3. Update the cart badge immediately
+    updateCartBadge();
+}
 
 // --- Main function to load details and set up the button ---
 function loadProductDetails() {
