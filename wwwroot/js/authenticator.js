@@ -96,8 +96,8 @@ async function handleRegister(event) {
         alert(`✅ Success! User "${name}" has been registered and saved locally. Redirecting to login...`);
 
         // 2. Perform redirect after the user clicks 'OK' on the alert
-        // 🚀 CORRECTED REDIRECT TO login.html
-        window.location.href = 'login.html'; 
+        // 🚀 CORRECTED REDIRECT TO Index.html
+        window.location.href = 'Index.html'; 
         
     } catch (error) {
         console.error("⚠️ Error during registration:", error);
